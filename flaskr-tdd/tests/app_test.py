@@ -1,6 +1,7 @@
 import pytest
 import os
 from pathlib import Path
+import json
 
 from project.app import app, init_db
 
@@ -52,7 +53,8 @@ def test_empty_db(client):
 def test_login_logout(client):
     """Test login and logout using helper functions"""
     rv = login(client, app.config["USERNAME"], app.config["PASSWORD"])
-    assert b"You were logged in" in rv.data
+    # Here the verification is through a flash message, can it be through another means?
+    assert b"You were logged in" in rv.data 
     rv = logout(client)
     assert b"You were logged out" in rv.data
     rv = login(client, app.config["USERNAME"] + "x", app.config["PASSWORD"])
@@ -72,3 +74,9 @@ def test_messages(client):
     assert b"No entries here so far" not in rv.data
     assert b"&lt;Hello&gt;" in rv.data
     assert b"<strong>HTML</strong> allowed here" in rv.data
+
+def test_delete_message(client):
+    """Ensure the messages are being deleted"""
+    rv = client.get('/delete/1')
+    data = json.loads(rv.data)
+    assert data["status"] == 1
